@@ -7,7 +7,24 @@ const sourcemaps = require('gulp-sourcemaps');
 const notify = require('gulp-notify');
 const plumber = require('gulp-plumber');
 const gcmq = require('gulp-group-css-media-queries');
-const sassGlob = require('gulp-sass-glob');
+const fileinclude = require('gulp-file-include');
+
+// таск для сборки HTML и шаблонов
+gulp.task('html', function (callback) {
+    return gulp.src('./app/html/*.html')
+        .pipe(plumber({
+            errorHandler: notify.onError(function (err) {
+                return {
+                    title: 'HTML include',
+                    sound: false,
+                    message: err.message
+                }
+            })
+        }))
+        .pipe(fileinclude({prefix: '@@'}))
+        .pipe(gulp.dest('./app/'))
+    callback();
+})
 
 gulp.task('sass', function (callback) {
     return gulp.src('./app/sass/main.sass')
@@ -23,7 +40,6 @@ gulp.task('sass', function (callback) {
         }))
 
         .pipe(sourcemaps.init())
-        .pipe(sassGlob())
         .pipe(sass({
             indentType: 'tab',
             indentWidth: 1,
@@ -49,6 +65,9 @@ gulp.task('watch', function () {
     // watch('./app/sass/**/*.sass', function () {
     //     setTimeout(gulp.parallel('sass'), 1000)
     // })
+
+    // слежение за HTML и сборка страниц
+    watch('./app/html/**/*.html', gulp.parallel('html'))
 });
 
 // Задача для стратта сервера из папки app
@@ -60,4 +79,4 @@ gulp.task('server', function() {
     });
 });
 
-gulp.task('default', gulp.parallel('server','watch', 'sass'))
+gulp.task('default', gulp.parallel('server','watch', 'sass', 'html'))
