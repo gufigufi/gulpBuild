@@ -7,23 +7,26 @@ const sourcemaps = require('gulp-sourcemaps');
 const notify = require('gulp-notify');
 const plumber = require('gulp-plumber');
 const gcmq = require('gulp-group-css-media-queries');
-const fileinclude = require('gulp-file-include');
+const pug = require('gulp-pug');
 
-// таск для сборки HTML и шаблонов
-gulp.task('html', function (callback) {
-    return gulp.src('./app/html/*.html')
+//таск для сборки Pug файлов
+gulp.task('pug', function () {
+    return gulp.src('./app/pug/pages/**/*.pug')
+
         .pipe(plumber({
             errorHandler: notify.onError(function (err) {
                 return {
-                    title: 'HTML include',
+                    title: 'Pug',
                     sound: false,
                     message: err.message
                 }
             })
         }))
-        .pipe(fileinclude({prefix: '@@'}))
+
+        .pipe(pug({
+            pretty: true
+        }))
         .pipe(gulp.dest('./app/'))
-    callback();
 })
 
 gulp.task('sass', function (callback) {
@@ -66,8 +69,8 @@ gulp.task('watch', function () {
     //     setTimeout(gulp.parallel('sass'), 1000)
     // })
 
-    // слежение за HTML и сборка страниц
-    watch('./app/html/**/*.html', gulp.parallel('html'))
+    // слежение за PUG и сборка
+    watch('./app/pug/**/*.pug', gulp.parallel('pug'))
 });
 
 // Задача для стратта сервера из папки app
@@ -79,4 +82,4 @@ gulp.task('server', function() {
     });
 });
 
-gulp.task('default', gulp.parallel('server','watch', 'sass', 'html'))
+gulp.task('default', gulp.parallel('server','watch', 'sass', 'pug'))
