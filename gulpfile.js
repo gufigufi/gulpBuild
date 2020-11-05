@@ -26,7 +26,7 @@ gulp.task('pug', function () {
         .pipe(pug({
             pretty: true
         }))
-        .pipe(gulp.dest('./app/'))
+        .pipe(gulp.dest('./build/'))
 })
 
 gulp.task('sass', function (callback) {
@@ -53,13 +53,13 @@ gulp.task('sass', function (callback) {
             overrideBrowserslist: ['last 4 version']
         }))
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest('./app/css/'))
+        .pipe(gulp.dest('./build/css/'))
     callback();
 });
 
 gulp.task('watch', function () {
     // слежение за HTML и css и обновление браузера
-    watch(['./app/*.html', './app/css/**/*.css'], gulp.parallel(browserSync.reload));
+    watch(['./build/*.html', './build/css/**/*.css'], gulp.parallel(browserSync.reload));
 
     // слежение за SASS и компиляция в CSS
     watch('./app/sass/**/*.sass', gulp.parallel('sass'))
@@ -77,7 +77,7 @@ gulp.task('watch', function () {
 gulp.task('server', function() {
     browserSync.init({
         server: {
-            baseDir: "./app/"
+            baseDir: "./build/"
         }
     });
 });
