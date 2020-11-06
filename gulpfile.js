@@ -8,9 +8,10 @@ const notify = require('gulp-notify');
 const plumber = require('gulp-plumber');
 const gcmq = require('gulp-group-css-media-queries');
 const pug = require('gulp-pug');
+const del = require('del');
 
 //таск для сборки Pug файлов
-gulp.task('pug', function () {
+gulp.task('pug', function (callback) {
     return gulp.src('./app/pug/pages/**/*.pug')
 
         .pipe(plumber({
@@ -27,6 +28,8 @@ gulp.task('pug', function () {
             pretty: true
         }))
         .pipe(gulp.dest('./build/'))
+        .pipe(browserSync.stream()) // обновление СSS после компиляции
+    callback()
 })
 
 gulp.task('sass', function (callback) {
@@ -54,13 +57,28 @@ gulp.task('sass', function (callback) {
         }))
         .pipe(sourcemaps.write())
         .pipe(gulp.dest('./build/css/'))
+        .pipe(browserSync.stream()) // обнновление HTML после компиляции
     callback();
 });
 
-gulp.task('watch', function () {
-    // слежение за HTML и css и обновление браузера
-    watch(['./build/*.html', './build/css/**/*.css'], gulp.parallel(browserSync.reload));
+// копирование изображение
+gulp.task('copy:img', function (callback) {
+    return gulp.src('./app/img/**/*.*')
+        .pipe(gulp.dest('build/img/'))
+    callback()
+})
 
+// копирование JS фалов
+gulp.task('copy:js', function (callback) {
+    return gulp.src('./app/js/**/*.*')
+        .pipe(gulp.dest('build/js/'))
+    callback()
+})
+
+gulp.task('watch', function () {
+
+    // следим за картинками и скриптами, и обновляем браузер
+    watch(['./build/js/**/*.*', './build/img/**/*.*'], gulp.parallel(browserSync.reload))
     // слежение за SASS и компиляция в CSS
     watch('./app/sass/**/*.sass', gulp.parallel('sass'))
 
@@ -71,6 +89,11 @@ gulp.task('watch', function () {
 
     // слежение за PUG и сборка
     watch('./app/pug/**/*.pug', gulp.parallel('pug'))
+
+    // следим за картинками и скриптами, и копируем их в build
+    watch('./app/img/**/*.*', gulp.parallel('copy:img'))
+    watch('./app/js/**/*.*', gulp.parallel('copy:js'))
+
 });
 
 // Задача для стратта сервера из папки app
@@ -82,4 +105,12 @@ gulp.task('server', function() {
     });
 });
 
-gulp.task('default', gulp.parallel('server','watch', 'sass', 'pug'))
+gulp.task('clean:build', function () {
+    return del('./build/')
+})
+
+gulp.task('default', gulp.series(
+    gulp.parallel('clean:build'),
+    gulp.parallel('sass', 'pug', 'copy:img', 'copy:js'),
+    gulp.parallel('server','watch')
+))
