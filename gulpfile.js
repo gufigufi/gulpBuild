@@ -1,7 +1,7 @@
 const gulp = require('gulp');
 const browserSync = require('browser-sync').create();
 const watch = require('gulp-watch');
-const sass = require('gulp-sass');
+const scss = require('gulp-sass')(require('sass'));
 const autoprefixer = require('gulp-autoprefixer');
 const sourcemaps = require('gulp-sourcemaps');
 const notify = require('gulp-notify');
@@ -32,8 +32,8 @@ gulp.task('pug', function (callback) {
     callback()
 })
 
-gulp.task('sass', function (callback) {
-    return gulp.src('./app/sass/main.sass')
+gulp.task('scss', function (callback) {
+    return gulp.src('./app/scss/main.scss')
 
         .pipe(plumber({
             errorHandler: notify.onError(function (err) {
@@ -46,7 +46,7 @@ gulp.task('sass', function (callback) {
         }))
 
         .pipe(sourcemaps.init())
-        .pipe(sass({
+        .pipe(scss({
             indentType: 'tab',
             indentWidth: 1,
             outputStyle: 'expanded'
@@ -79,12 +79,12 @@ gulp.task('watch', function () {
 
     // следим за картинками и скриптами, и обновляем браузер
     watch(['./build/js/**/*.*', './build/img/**/*.*'], gulp.parallel(browserSync.reload))
-    // слежение за SASS и компиляция в CSS
-    watch('./app/sass/**/*.sass', gulp.parallel('sass'))
+    // слежение за ScSS и компиляция в CSS
+    watch('./app/scss/**/*.scss', gulp.parallel('scss'))
 
     // в случае если возникает проблема что gulp перезапускает сервер быстрее чем файл успевает сохраниться
-    // watch('./app/sass/**/*.sass', function () {
-    //     setTimeout(gulp.parallel('sass'), 1000)
+    // watch('./app/scss/**/*.scss', function () {
+    //     setTimeout(gulp.parallel('scss'), 1000)
     // })
 
     // слежение за PUG и сборка
@@ -111,6 +111,6 @@ gulp.task('clean:build', function () {
 
 gulp.task('default', gulp.series(
     gulp.parallel('clean:build'),
-    gulp.parallel('sass', 'pug', 'copy:img', 'copy:js'),
+    gulp.parallel('scss', 'pug', 'copy:img', 'copy:js'),
     gulp.parallel('server','watch')
 ))
